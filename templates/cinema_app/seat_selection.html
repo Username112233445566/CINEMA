@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Выбор мест - {{ screening.movie.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>{{ screening.movie.title }}</h2>
+        <p><strong>Время:</strong> {{ screening.start_time|date:"d.m.Y H:i" }}</p>
+        <p><strong>Зал:</strong> {{ screening.hall.name }}</p>
+        <p><strong>Цена:</strong> {{ screening.price }} ₽</p>
+
+        <div class="screen">ЭКРАН</div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="seating-chart">
+                {% for row in seats_matrix %}
+                <div class="row mb-2">
+                    <div class="col-auto">
+                        <strong>Ряд {{ forloop.counter }}</strong>
+                    </div>
+                    <div class="col">
+                        <div class="d-flex justify-content-center">
+                            {% for seat_data in row %}
+                            <div class="seat {% if seat_data.is_booked %}booked{% else %}available{% endif %}"
+                                 {% if not seat_data.is_booked %}
+                                 onclick="selectSeat({{ seat_data.seat.id }})"
+                                 {% endif %}>
+                                {{ seat_data.seat.number }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <input type="hidden" name="seat_id" id="selected_seat">
+            
+            <div class="mt-4">
+                <div class="d-flex gap-2 mb-3">
+                    <div class="d-flex align-items-center">
+                        <div class="seat available me-2"></div>
+                        <span>Свободно</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="seat booked me-2"></div>
+                        <span>Занято</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="seat selected me-2"></div>
+                        <span>Выбрано</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-success btn-lg" id="book_btn" disabled>
+                    Забронировать выбранное место
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let selectedSeat = null;
+
+function selectSeat(seatId) {
+    if (selectedSeat) {
+        // Убираем выделение с предыдущего места
+        const prevSeat = document.querySelector(`.seat[onclick*="${selectedSeat}"]`);
+        if (prevSeat) prevSeat.classList.remove('selected');
+    }
+    
+    // Выделяем новое место
+    selectedSeat = seatId;
+    const seatElement = document.querySelector(`.seat[onclick*="${seatId}"]`);
+    seatElement.classList.add('selected');
+    
+    // Активируем кнопку
+    document.getElementById('selected_seat').value = seatId;
+    document.getElementById('book_btn').disabled = false;
+}
+</script>
+{% endblock %}

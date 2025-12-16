@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная - Кинотеатр{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto text-center">
+        <h1>Добро пожаловать в кинотеатр!</h1>
+        <p class="lead">Выберите фильм и забронируйте места онлайн</p>
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <a href="{% url 'movie_list' %}" class="btn btn-primary btn-lg w-100 mb-3">Все фильмы</a>
+            </div>
+            <div class="col-md-6">
+                <a href="{% url 'screening_list' %}" class="btn btn-success btn-lg w-100 mb-3">Все сеансы</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <h2>Сеансы на сегодня ({{ today|date:"d.m.Y" }})</h2>
+        {% if screenings %}
+            <div class="row">
+                {% for screening in screenings %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        {% if screening.movie.poster %}
+                        <img src="{{ screening.movie.poster.url }}" class="card-img-top" alt="{{ screening.movie.title }}" style="height: 300px; object-fit: cover;">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ screening.movie.title }}</h5>
+                            <p class="card-text">
+                                <strong>Время:</strong> {{ screening.start_time|time:"H:i" }}<br>
+                                <strong>Зал:</strong> {{ screening.hall.name }}<br>
+                                <strong>Цена:</strong> {{ screening.price }} ₽
+                            </p>
+                            <a href="{% url 'seat_selection' screening.id %}" class="btn btn-primary">Выбрать места</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">На сегодня сеансов нет.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
